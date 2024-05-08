@@ -15,12 +15,12 @@ from io import BytesIO
 df_raw = pd.read_csv("../resources/API_CHN_DS2_en_csv_v2_2097.csv")
 years = [col for col in df_raw.columns if col.isdigit()]
 other = [col for col in df_raw.columns if not col.isdigit()]
-df_melt = pd.melt(df_raw, id_vars = other, value_vars = years, var_name = "Years", value_name = "Amount")
-df_melt.dropna(how='all', axis=1, inplace=True)
+df = pd.melt(df_raw, id_vars = other, value_vars = years, var_name = "Years", value_name = "Amount")
+df.dropna(how='all', axis=1, inplace=True)
 ranges = {'1960-1980': list(range(1960,1981)), '1981-2000': list(range(1981,2001)), '2001-2020': list(range(2001,2021)),
-          '2021-2023': list(range(2021,2024))}
-df = df_melt[(df_melt['Years'].isin( [str(x) for x in ranges['1981-2000']]))]
-print(df)
+          '2021-2023': list(range(2021,2024)), '1960-2023': list(range(1960,2024))}
+# df = df_melt[(df_melt['Years'].isin( [str(x) for x in ranges['1981-2000']]))]
+# print(df)
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -34,7 +34,14 @@ app.layout = dbc.Container([
                 value=df['Indicator Name'].iloc[0],
                 clearable=False,
                 options=df['Indicator Name'])
-        ], width=4)
+        ], width=4, md=6),
+        dbc.Col([
+                    dcc.Dropdown(
+                        id='category2',
+                        value=list(ranges.keys())[0],
+                        clearable=False,
+                        options=list(ranges.keys()))
+                ], width=4, md=6)
     ]),
 
     dbc.Row([
@@ -64,11 +71,14 @@ app.layout = dbc.Container([
     Output(component_id='bar-graph-matplotlib', component_property='src'),
     Output('bar-graph-plotly', 'figure'),
     Output('grid', 'defaultColDef'),
-    Input('category', 'value'),
+    [Input('category', 'value'), Input('category2', 'value')],
 )
-def plot_data(selected_yaxis):
+def plot_data(selected_yaxis, selected_range):
     print(selected_yaxis)
-    df_selected = df[(df['Indicator Name'].isin([selected_yaxis]))]
+    print(selected_range)
+    df_selected = df[(df['Years'].isin([str(x) for x in ranges[selected_range]]))
+                     & (df['Indicator Name'].isin([selected_yaxis]))]
+    # df_selected = df[(df['Indicator Name'].isin([selected_yaxis]))]
     yaxis = 'Amount'
     # Build the matplotlib figure
     fig = plt.figure(figsize=(14, 5))
