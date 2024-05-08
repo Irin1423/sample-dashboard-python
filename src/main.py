@@ -12,15 +12,22 @@ from io import BytesIO
 
 # df = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/solar.csv")
 # df = pd.read_csv("../resources/solar.csv")
+
 df_raw = pd.read_csv("../resources/API_CHN_DS2_en_csv_v2_2097.csv")
+
+# generate list of year based on column names which are only digit
 years = [col for col in df_raw.columns if col.isdigit()]
+# generate list of column names based on column names which are not digit
 other = [col for col in df_raw.columns if not col.isdigit()]
+# convert all year columns into a single colum named 'Years' and values of each colums into another colum named 'Amount'
 df = pd.melt(df_raw, id_vars = other, value_vars = years, var_name = "Years", value_name = "Amount")
+# drop empty columns
 df.dropna(how='all', axis=1, inplace=True)
+print(df)
+
+# this will be used to populate dropdown list for year rnages
 ranges = {'1960-1980': list(range(1960,1981)), '1981-2000': list(range(1981,2001)), '2001-2020': list(range(2001,2021)),
           '2021-2023': list(range(2021,2024)), '1960-2023': list(range(1960,2024))}
-# df = df_melt[(df_melt['Years'].isin( [str(x) for x in ranges['1981-2000']]))]
-# print(df)
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
