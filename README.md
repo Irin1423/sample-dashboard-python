@@ -7,3 +7,5 @@ pip install dash-bootstrap-components
 pip install pandas
 pip install matplotlib
 ```
+
+# test vscode
